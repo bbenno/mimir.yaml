@@ -1,0 +1,3 @@
+# Local filesystem storage directory.
+# CLI flag: -<prefix>.filesystem.dir
+[dir: <string> | default = ""]

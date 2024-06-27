@@ -1,0 +1,485 @@
+# Backend storage to use. Supported backends are: s3, gcs, azure, swift,
+# filesystem.
+# CLI flag: -blocks-storage.backend
+[backend: <string> | default = "filesystem"]
+
+# The s3_backend block configures the connection to Amazon S3 object storage
+# backend.
+# The CLI flags prefix for this block configuration is: blocks-storage
+[s3: <s3_storage_backend>]
+
+# The gcs_backend block configures the connection to Google Cloud Storage object
+# storage backend.
+# The CLI flags prefix for this block configuration is: blocks-storage
+[gcs: <gcs_storage_backend>]
+
+# The azure_storage_backend block configures the connection to Azure object
+# storage backend.
+# The CLI flags prefix for this block configuration is: blocks-storage
+[azure: <azure_storage_backend>]
+
+# The swift_storage_backend block configures the connection to OpenStack Object
+# Storage (Swift) object storage backend.
+# The CLI flags prefix for this block configuration is: blocks-storage
+[swift: <swift_storage_backend>]
+
+# The filesystem_storage_backend block configures the usage of local file system
+# as object storage backend.
+# The CLI flags prefix for this block configuration is: blocks-storage
+[filesystem: <filesystem_storage_backend>]
+
+# Prefix for all objects stored in the backend storage. For simplicity, it may
+# only contain digits and English alphabet letters.
+# CLI flag: -blocks-storage.storage-prefix
+[storage_prefix: <string> | default = ""]
+
+# This configures how the querier and store-gateway discover and synchronize
+# blocks stored in the bucket.
+bucket_store:
+  # Directory to store synchronized TSDB index headers. This directory is not
+  # required to be persisted between restarts, but it's highly recommended in
+  # order to improve the store-gateway startup time.
+  # CLI flag: -blocks-storage.bucket-store.sync-dir
+  [sync_dir: <string> | default = "./tsdb-sync/"]
+
+  # (advanced) How frequently to scan the bucket, or to refresh the bucket index
+  # (if enabled), in order to look for changes (new blocks shipped by ingesters
+  # and blocks deleted by retention or compaction).
+  # CLI flag: -blocks-storage.bucket-store.sync-interval
+  [sync_interval: <duration> | default = 15m]
+
+  # (advanced) Max number of concurrent queries to execute against the long-term
+  # storage. The limit is shared across all tenants.
+  # CLI flag: -blocks-storage.bucket-store.max-concurrent
+  [max_concurrent: <int> | default = 100]
+
+  # (advanced) Maximum number of concurrent tenants synching blocks.
+  # CLI flag: -blocks-storage.bucket-store.tenant-sync-concurrency
+  [tenant_sync_concurrency: <int> | default = 1]
+
+  # (advanced) Maximum number of concurrent blocks synching per tenant.
+  # CLI flag: -blocks-storage.bucket-store.block-sync-concurrency
+  [block_sync_concurrency: <int> | default = 4]
+
+  # (advanced) Number of Go routines to use when syncing block meta files from
+  # object storage per tenant.
+  # CLI flag: -blocks-storage.bucket-store.meta-sync-concurrency
+  [meta_sync_concurrency: <int> | default = 20]
+
+  index_cache:
+    # The index cache backend type. Supported values: inmemory, memcached,
+    # redis.
+    # CLI flag: -blocks-storage.bucket-store.index-cache.backend
+    [backend: <string> | default = "inmemory"]
+
+    # The memcached block configures the Memcached-based caching backend.
+    # The CLI flags prefix for this block configuration is:
+    # blocks-storage.bucket-store.index-cache
+    [memcached: <memcached>]
+
+    # The redis block configures the Redis-based caching backend.
+    # The CLI flags prefix for this block configuration is:
+    # blocks-storage.bucket-store.index-cache
+    [redis: <redis>]
+
+    inmemory:
+      # Maximum size in bytes of in-memory index cache used to speed up blocks
+      # index lookups (shared between all tenants).
+      # CLI flag: -blocks-storage.bucket-store.index-cache.inmemory.max-size-bytes
+      [max_size_bytes: <int> | default = 1073741824]
+
+  chunks_cache:
+    # Backend for chunks cache, if not empty. Supported values: memcached,
+    # redis.
+    # CLI flag: -blocks-storage.bucket-store.chunks-cache.backend
+    [backend: <string> | default = ""]
+
+    # The memcached block configures the Memcached-based caching backend.
+    # The CLI flags prefix for this block configuration is:
+    # blocks-storage.bucket-store.chunks-cache
+    [memcached: <memcached>]
+
+    # The redis block configures the Redis-based caching backend.
+    # The CLI flags prefix for this block configuration is:
+    # blocks-storage.bucket-store.chunks-cache
+    [redis: <redis>]
+
+    # (advanced) Maximum number of sub-GetRange requests that a single GetRange
+    # request can be split into when fetching chunks. Zero or negative value =
+    # unlimited number of sub-requests.
+    # CLI flag: -blocks-storage.bucket-store.chunks-cache.max-get-range-requests
+    [max_get_range_requests: <int> | default = 3]
+
+    # (advanced) TTL for caching object attributes for chunks. If the metadata
+    # cache is configured, attributes will be stored under this cache backend,
+    # otherwise attributes are stored in the chunks cache backend.
+    # CLI flag: -blocks-storage.bucket-store.chunks-cache.attributes-ttl
+    [attributes_ttl: <duration> | default = 168h]
+
+    # (advanced) Maximum number of object attribute items to keep in a first
+    # level in-memory LRU cache. Metadata will be stored and fetched in-memory
+    # before hitting the cache backend. 0 to disable the in-memory cache.
+    # CLI flag: -blocks-storage.bucket-store.chunks-cache.attributes-in-memory-max-items
+    [attributes_in_memory_max_items: <int> | default = 50000]
+
+    # (advanced) TTL for caching individual chunks subranges.
+    # CLI flag: -blocks-storage.bucket-store.chunks-cache.subrange-ttl
+    [subrange_ttl: <duration> | default = 24h]
+
+  metadata_cache:
+    # Backend for metadata cache, if not empty. Supported values: memcached,
+    # redis.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.backend
+    [backend: <string> | default = ""]
+
+    # The memcached block configures the Memcached-based caching backend.
+    # The CLI flags prefix for this block configuration is:
+    # blocks-storage.bucket-store.metadata-cache
+    [memcached: <memcached>]
+
+    # The redis block configures the Redis-based caching backend.
+    # The CLI flags prefix for this block configuration is:
+    # blocks-storage.bucket-store.metadata-cache
+    [redis: <redis>]
+
+    # (advanced) How long to cache list of tenants in the bucket.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.tenants-list-ttl
+    [tenants_list_ttl: <duration> | default = 15m]
+
+    # (advanced) How long to cache list of blocks for each tenant.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.tenant-blocks-list-ttl
+    [tenant_blocks_list_ttl: <duration> | default = 5m]
+
+    # (advanced) How long to cache list of chunks for a block.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.chunks-list-ttl
+    [chunks_list_ttl: <duration> | default = 24h]
+
+    # (advanced) How long to cache information that block metafile exists. Also
+    # used for tenant deletion mark file.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.metafile-exists-ttl
+    [metafile_exists_ttl: <duration> | default = 2h]
+
+    # (advanced) How long to cache information that block metafile doesn't
+    # exist. Also used for tenant deletion mark file.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.metafile-doesnt-exist-ttl
+    [metafile_doesnt_exist_ttl: <duration> | default = 5m]
+
+    # (advanced) How long to cache content of the metafile.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.metafile-content-ttl
+    [metafile_content_ttl: <duration> | default = 24h]
+
+    # (advanced) Maximum size of metafile content to cache in bytes. Caching
+    # will be skipped if the content exceeds this size. This is useful to avoid
+    # network round trip for large content if the configured caching backend has
+    # an hard limit on cached items size (in this case, you should set this
+    # limit to the same limit in the caching backend).
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.metafile-max-size-bytes
+    [metafile_max_size_bytes: <int> | default = 1048576]
+
+    # (advanced) How long to cache attributes of the block metafile.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.metafile-attributes-ttl
+    [metafile_attributes_ttl: <duration> | default = 168h]
+
+    # (advanced) How long to cache attributes of the block index.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.block-index-attributes-ttl
+    [block_index_attributes_ttl: <duration> | default = 168h]
+
+    # (advanced) How long to cache content of the bucket index.
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.bucket-index-content-ttl
+    [bucket_index_content_ttl: <duration> | default = 5m]
+
+    # (advanced) Maximum size of bucket index content to cache in bytes. Caching
+    # will be skipped if the content exceeds this size. This is useful to avoid
+    # network round trip for large content if the configured caching backend has
+    # an hard limit on cached items size (in this case, you should set this
+    # limit to the same limit in the caching backend).
+    # CLI flag: -blocks-storage.bucket-store.metadata-cache.bucket-index-max-size-bytes
+    [bucket_index_max_size_bytes: <int> | default = 1048576]
+
+  # (advanced) Duration after which the blocks marked for deletion will be
+  # filtered out while fetching blocks. The idea of ignore-deletion-marks-delay
+  # is to ignore blocks that are marked for deletion with some delay. This
+  # ensures store can still serve blocks that are meant to be deleted but do not
+  # have a replacement yet.
+  # CLI flag: -blocks-storage.bucket-store.ignore-deletion-marks-delay
+  [ignore_deletion_mark_delay: <duration> | default = 1h]
+
+  bucket_index:
+    # (advanced) How frequently a bucket index, which previously failed to load,
+    # should be tried to load again. This option is used only by querier.
+    # CLI flag: -blocks-storage.bucket-store.bucket-index.update-on-error-interval
+    [update_on_error_interval: <duration> | default = 1m]
+
+    # (advanced) How long a unused bucket index should be cached. Once this
+    # timeout expires, the unused bucket index is removed from the in-memory
+    # cache. This option is used only by querier.
+    # CLI flag: -blocks-storage.bucket-store.bucket-index.idle-timeout
+    [idle_timeout: <duration> | default = 1h]
+
+    # (advanced) The maximum allowed age of a bucket index (last updated) before
+    # queries start failing because the bucket index is too old. The bucket
+    # index is periodically updated by the compactor, and this check is enforced
+    # in the querier (at query time).
+    # CLI flag: -blocks-storage.bucket-store.bucket-index.max-stale-period
+    [max_stale_period: <duration> | default = 1h]
+
+  # (advanced) Blocks with minimum time within this duration are ignored, and
+  # not loaded by store-gateway. Useful when used together with
+  # -querier.query-store-after to prevent loading young blocks, because there
+  # are usually many of them (depending on number of ingesters) and they are not
+  # yet compacted. Negative values or 0 disable the filter.
+  # CLI flag: -blocks-storage.bucket-store.ignore-blocks-within
+  [ignore_blocks_within: <duration> | default = 10h]
+
+  # (advanced) Max size - in bytes - of the in-memory series hash cache. The
+  # cache is shared across all tenants and it's used only when query sharding is
+  # enabled.
+  # CLI flag: -blocks-storage.bucket-store.series-hash-cache-max-size-bytes
+  [series_hash_cache_max_size_bytes: <int> | default = 1073741824]
+
+  # (advanced) Max size - in bytes - of a gap for which the partitioner
+  # aggregates together two bucket GET object requests.
+  # CLI flag: -blocks-storage.bucket-store.partitioner-max-gap-bytes
+  [partitioner_max_gap_bytes: <int> | default = 524288]
+
+  # (advanced) Controls what is the ratio of postings offsets that the store
+  # will hold in memory.
+  # CLI flag: -blocks-storage.bucket-store.posting-offsets-in-mem-sampling
+  [postings_offsets_in_mem_sampling: <int> | default = 32]
+
+  index_header:
+    # (advanced) Maximum number of idle file handles the store-gateway keeps
+    # open for each index-header file.
+    # CLI flag: -blocks-storage.bucket-store.index-header.max-idle-file-handles
+    [max_idle_file_handles: <int> | default = 1]
+
+    # (experimental) If enabled, store-gateway will periodically persist block
+    # IDs of lazy loaded index-headers and load them eagerly during startup.
+    # Ignored if index-header lazy loading is disabled.
+    # CLI flag: -blocks-storage.bucket-store.index-header.eager-loading-startup-enabled
+    [eager_loading_startup_enabled: <boolean> | default = true]
+
+    # (advanced) If enabled, store-gateway will lazy load an index-header only
+    # once required by a query.
+    # CLI flag: -blocks-storage.bucket-store.index-header.lazy-loading-enabled
+    [lazy_loading_enabled: <boolean> | default = true]
+
+    # (advanced) If index-header lazy loading is enabled and this setting is >
+    # 0, the store-gateway will offload unused index-headers after 'idle
+    # timeout' inactivity.
+    # CLI flag: -blocks-storage.bucket-store.index-header.lazy-loading-idle-timeout
+    [lazy_loading_idle_timeout: <duration> | default = 1h]
+
+    # (advanced) Maximum number of concurrent index header loads across all
+    # tenants. If set to 0, concurrency is unlimited.
+    # CLI flag: -blocks-storage.bucket-store.index-header.lazy-loading-concurrency
+    [lazy_loading_concurrency: <int> | default = 4]
+
+    # (advanced) If true, verify the checksum of index headers upon loading them
+    # (either on startup or lazily when lazy loading is enabled). Setting to
+    # true helps detect disk corruption at the cost of slowing down index header
+    # loading.
+    # CLI flag: -blocks-storage.bucket-store.index-header.verify-on-load
+    [verify_on_load: <boolean> | default = false]
+
+  # (advanced) This option controls how many series to fetch per batch. The
+  # batch size must be greater than 0.
+  # CLI flag: -blocks-storage.bucket-store.batch-series-size
+  [streaming_series_batch_size: <int> | default = 5000]
+
+  # (experimental) This option controls the strategy to selection of series and
+  # deferring application of matchers. A more aggressive strategy will fetch
+  # less posting lists at the cost of more series. This is useful when querying
+  # large blocks in which many series share the same label name and value.
+  # Supported values (most aggressive to least aggressive): speculative,
+  # worst-case, worst-case-small-posting-lists, all.
+  # CLI flag: -blocks-storage.bucket-store.series-selection-strategy
+  [series_selection_strategy: <string> | default = "worst-case"]
+
+  series_selection_strategies:
+    # (experimental) This option is only used when
+    # blocks-storage.bucket-store.series-selection-strategy=worst-case.
+    # Increasing the series preference results in fetching more series than
+    # postings. Must be a positive floating point number.
+    # CLI flag: -blocks-storage.bucket-store.series-selection-strategies.worst-case-series-preference
+    [worst_case_series_preference: <float> | default = 0.75]
+
+tsdb:
+  # Directory to store TSDBs (including WAL) in the ingesters. This directory is
+  # required to be persisted between restarts.
+  # CLI flag: -blocks-storage.tsdb.dir
+  [dir: <string> | default = "./tsdb/"]
+
+  # TSDB blocks retention in the ingester before a block is removed. If shipping
+  # is enabled, the retention will be relative to the time when the block was
+  # uploaded to storage. If shipping is disabled then its relative to the
+  # creation time of the block. This should be larger than the
+  # -blocks-storage.tsdb.block-ranges-period, -querier.query-store-after and
+  # large enough to give store-gateways and queriers enough time to discover
+  # newly uploaded blocks.
+  # CLI flag: -blocks-storage.tsdb.retention-period
+  [retention_period: <duration> | default = 13h]
+
+  # (advanced) How frequently the TSDB blocks are scanned and new ones are
+  # shipped to the storage. 0 means shipping is disabled.
+  # CLI flag: -blocks-storage.tsdb.ship-interval
+  [ship_interval: <duration> | default = 1m]
+
+  # (advanced) Maximum number of tenants concurrently shipping blocks to the
+  # storage.
+  # CLI flag: -blocks-storage.tsdb.ship-concurrency
+  [ship_concurrency: <int> | default = 10]
+
+  # (advanced) How frequently the ingester checks whether the TSDB head should
+  # be compacted and, if so, triggers the compaction. Mimir applies a jitter to
+  # the first check, and subsequent checks will happen at the configured
+  # interval. A block is only created if data covers the smallest block range.
+  # The configured interval must be between 0 and 15 minutes.
+  # CLI flag: -blocks-storage.tsdb.head-compaction-interval
+  [head_compaction_interval: <duration> | default = 1m]
+
+  # (advanced) Maximum number of tenants concurrently compacting TSDB head into
+  # a new block
+  # CLI flag: -blocks-storage.tsdb.head-compaction-concurrency
+  [head_compaction_concurrency: <int> | default = 1]
+
+  # (advanced) If TSDB head is idle for this duration, it is compacted. Note
+  # that up to 25% jitter is added to the value to avoid ingesters compacting
+  # concurrently. 0 means disabled.
+  # CLI flag: -blocks-storage.tsdb.head-compaction-idle-timeout
+  [head_compaction_idle_timeout: <duration> | default = 1h]
+
+  # (advanced) The write buffer size used by the head chunks mapper. Lower
+  # values reduce memory utilisation on clusters with a large number of tenants
+  # at the cost of increased disk I/O operations. The configured buffer size
+  # must be between 65536 and 8388608.
+  # CLI flag: -blocks-storage.tsdb.head-chunks-write-buffer-size-bytes
+  [head_chunks_write_buffer_size_bytes: <int> | default = 4194304]
+
+  # (experimental) How much variance (as percentage between 0 and 1) should be
+  # applied to the chunk end time, to spread chunks writing across time. Doesn't
+  # apply to the last chunk of the chunk range. 0 means no variance.
+  # CLI flag: -blocks-storage.tsdb.head-chunks-end-time-variance
+  [head_chunks_end_time_variance: <float> | default = 0]
+
+  # (advanced) The number of shards of series to use in TSDB (must be a power of
+  # 2). Reducing this will decrease memory footprint, but can negatively impact
+  # performance.
+  # CLI flag: -blocks-storage.tsdb.stripe-size
+  [stripe_size: <int> | default = 16384]
+
+  # (advanced) True to enable TSDB WAL compression.
+  # CLI flag: -blocks-storage.tsdb.wal-compression-enabled
+  [wal_compression_enabled: <boolean> | default = false]
+
+  # (advanced) TSDB WAL segments files max size (bytes).
+  # CLI flag: -blocks-storage.tsdb.wal-segment-size-bytes
+  [wal_segment_size_bytes: <int> | default = 134217728]
+
+  # (advanced) Maximum number of CPUs that can simultaneously processes WAL
+  # replay. If it is set to 0, then each TSDB is replayed with a concurrency
+  # equal to the number of CPU cores available on the machine.
+  # CLI flag: -blocks-storage.tsdb.wal-replay-concurrency
+  [wal_replay_concurrency: <int> | default = 0]
+
+  # (advanced) True to flush blocks to storage on shutdown. If false, incomplete
+  # blocks will be reused after restart.
+  # CLI flag: -blocks-storage.tsdb.flush-blocks-on-shutdown
+  [flush_blocks_on_shutdown: <boolean> | default = false]
+
+  # (advanced) If TSDB has not received any data for this duration, and all
+  # blocks from TSDB have been shipped, TSDB is closed and deleted from local
+  # disk. If set to positive value, this value should be equal or higher than
+  # -querier.query-ingesters-within flag to make sure that TSDB is not closed
+  # prematurely, which could cause partial query results. 0 or negative value
+  # disables closing of idle TSDB.
+  # CLI flag: -blocks-storage.tsdb.close-idle-tsdb-timeout
+  [close_idle_tsdb_timeout: <duration> | default = 13h]
+
+  # (experimental) True to enable snapshotting of in-memory TSDB data on disk
+  # when shutting down.
+  # CLI flag: -blocks-storage.tsdb.memory-snapshot-on-shutdown
+  [memory_snapshot_on_shutdown: <boolean> | default = false]
+
+  # (advanced) The size of the write queue used by the head chunks mapper. Lower
+  # values reduce memory utilisation at the cost of potentially higher ingest
+  # latency. Value of 0 switches chunks mapper to implementation without a
+  # queue.
+  # CLI flag: -blocks-storage.tsdb.head-chunks-write-queue-size
+  [head_chunks_write_queue_size: <int> | default = 1000000]
+
+  # (advanced) Max size - in bytes - of the in-memory series hash cache. The
+  # cache is shared across all tenants and it's used only when query sharding is
+  # enabled.
+  # CLI flag: -blocks-storage.tsdb.series-hash-cache-max-size-bytes
+  [series_hash_cache_max_size_bytes: <int> | default = 367001600]
+
+  # (experimental) Maximum capacity for out of order chunks, in samples between
+  # 1 and 255.
+  # CLI flag: -blocks-storage.tsdb.out-of-order-capacity-max
+  [out_of_order_capacity_max: <int> | default = 32]
+
+  # (experimental) How long to cache postings for matchers in the Head and
+  # OOOHead. 0 disables the cache and just deduplicates the in-flight calls.
+  # CLI flag: -blocks-storage.tsdb.head-postings-for-matchers-cache-ttl
+  [head_postings_for_matchers_cache_ttl: <duration> | default = 10s]
+
+  # (deprecated) Maximum number of entries in the cache for postings for
+  # matchers in the Head and OOOHead when TTL is greater than 0.
+  # CLI flag: -blocks-storage.tsdb.head-postings-for-matchers-cache-size
+  [head_postings_for_matchers_cache_size: <int> | default = 100]
+
+  # (experimental) Maximum size in bytes of the cache for postings for matchers
+  # in the Head and OOOHead when TTL is greater than 0.
+  # CLI flag: -blocks-storage.tsdb.head-postings-for-matchers-cache-max-bytes
+  [head_postings_for_matchers_cache_max_bytes: <int> | default = 104857600]
+
+  # (experimental) Force the cache to be used for postings for matchers in the
+  # Head and OOOHead, even if it's not a concurrent (query-sharding) call.
+  # CLI flag: -blocks-storage.tsdb.head-postings-for-matchers-cache-force
+  [head_postings_for_matchers_cache_force: <boolean> | default = false]
+
+  # (experimental) How long to cache postings for matchers in each compacted
+  # block queried from the ingester. 0 disables the cache and just deduplicates
+  # the in-flight calls.
+  # CLI flag: -blocks-storage.tsdb.block-postings-for-matchers-cache-ttl
+  [block_postings_for_matchers_cache_ttl: <duration> | default = 10s]
+
+  # (deprecated) Maximum number of entries in the cache for postings for
+  # matchers in each compacted block when TTL is greater than 0.
+  # CLI flag: -blocks-storage.tsdb.block-postings-for-matchers-cache-size
+  [block_postings_for_matchers_cache_size: <int> | default = 100]
+
+  # (experimental) Maximum size in bytes of the cache for postings for matchers
+  # in each compacted block when TTL is greater than 0.
+  # CLI flag: -blocks-storage.tsdb.block-postings-for-matchers-cache-max-bytes
+  [block_postings_for_matchers_cache_max_bytes: <int> | default = 104857600]
+
+  # (experimental) Force the cache to be used for postings for matchers in
+  # compacted blocks, even if it's not a concurrent (query-sharding) call.
+  # CLI flag: -blocks-storage.tsdb.block-postings-for-matchers-cache-force
+  [block_postings_for_matchers_cache_force: <boolean> | default = false]
+
+  # (experimental) When the number of in-memory series in the ingester is equal
+  # to or greater than this setting, the ingester tries to compact the TSDB
+  # Head. The early compaction removes from the memory all samples and inactive
+  # series up until -ingester.active-series-metrics-idle-timeout time ago. After
+  # an early compaction, the ingester will not accept any sample with a
+  # timestamp older than -ingester.active-series-metrics-idle-timeout time ago
+  # (unless out of order ingestion is enabled). The ingester checks every
+  # -blocks-storage.tsdb.head-compaction-interval whether an early compaction is
+  # required. Use 0 to disable it.
+  # CLI flag: -blocks-storage.tsdb.early-head-compaction-min-in-memory-series
+  [early_head_compaction_min_in_memory_series: <int> | default = 0]
+
+  # (experimental) When the early compaction is enabled, the early compaction is
+  # triggered only if the estimated series reduction is at least the configured
+  # percentage (0-100).
+  # CLI flag: -blocks-storage.tsdb.early-head-compaction-min-estimated-series-reduction-percentage
+  [early_head_compaction_min_estimated_series_reduction_percentage: <int> | default = 15]
+
+  # (experimental) Allows head compaction to happen when the min block range can
+  # no longer be appended, without requiring 1.5x the chunk range worth of data
+  # in the head.
+  # CLI flag: -blocks-storage.tsdb.timely-head-compaction-enabled
+  [timely_head_compaction_enabled: <boolean> | default = false]

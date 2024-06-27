@@ -1,0 +1,39 @@
+# Backend storage to use. Supported backends are: s3, gcs, azure, swift,
+# filesystem, local.
+# CLI flag: -alertmanager-storage.backend
+[backend: <string> | default = "filesystem"]
+
+# The s3_backend block configures the connection to Amazon S3 object storage
+# backend.
+# The CLI flags prefix for this block configuration is: alertmanager-storage
+[s3: <s3_storage_backend>]
+
+# The gcs_backend block configures the connection to Google Cloud Storage object
+# storage backend.
+# The CLI flags prefix for this block configuration is: alertmanager-storage
+[gcs: <gcs_storage_backend>]
+
+# The azure_storage_backend block configures the connection to Azure object
+# storage backend.
+# The CLI flags prefix for this block configuration is: alertmanager-storage
+[azure: <azure_storage_backend>]
+
+# The swift_storage_backend block configures the connection to OpenStack Object
+# Storage (Swift) object storage backend.
+# The CLI flags prefix for this block configuration is: alertmanager-storage
+[swift: <swift_storage_backend>]
+
+# The filesystem_storage_backend block configures the usage of local file system
+# as object storage backend.
+# The CLI flags prefix for this block configuration is: alertmanager-storage
+[filesystem: <filesystem_storage_backend>]
+
+# Prefix for all objects stored in the backend storage. For simplicity, it may
+# only contain digits and English alphabet letters.
+# CLI flag: -alertmanager-storage.storage-prefix
+[storage_prefix: <string> | default = ""]
+
+local:
+  # Path at which alertmanager configurations are stored.
+  # CLI flag: -alertmanager-storage.local.path
+  [path: <string> | default = ""]

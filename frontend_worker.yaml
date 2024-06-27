@@ -1,0 +1,39 @@
+# Address of the query-frontend component, in host:port format. If multiple
+# query-frontends are running, the host should be a DNS resolving to all
+# query-frontend instances. This option should be set only when query-scheduler
+# component is not in use.
+# CLI flag: -querier.frontend-address
+[frontend_address: <string> | default = ""]
+
+# Address of the query-scheduler component, in host:port format. The host should
+# resolve to all query-scheduler instances. This option should be set only when
+# query-scheduler component is in use and
+# -query-scheduler.service-discovery-mode is set to 'dns'.
+# CLI flag: -querier.scheduler-address
+[scheduler_address: <string> | default = ""]
+
+# (advanced) How often to query DNS for query-frontend or query-scheduler
+# address.
+# CLI flag: -querier.dns-lookup-period
+[dns_lookup_duration: <duration> | default = 10s]
+
+# (advanced) Querier ID, sent to the query-frontend to identify requests from
+# the same querier. Defaults to hostname.
+# CLI flag: -querier.id
+[id: <string> | default = ""]
+
+# Configures the gRPC client used to communicate between the querier and the
+# query-frontend.
+# The CLI flags prefix for this block configuration is: querier.frontend-client
+[grpc_client_config: <grpc_client>]
+
+# Configures the gRPC client used to communicate between the querier and the
+# query-scheduler.
+# The CLI flags prefix for this block configuration is: querier.scheduler-client
+[query_scheduler_grpc_client_config: <grpc_client>]
+
+# (experimental) Enables streaming of responses from querier to query-frontend
+# for response types that support it (currently only `active_series` responses
+# do).
+# CLI flag: -querier.response-streaming-enabled
+[response_streaming_enabled: <boolean> | default = false]

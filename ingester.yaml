@@ -1,0 +1,250 @@
+ring:
+  # The key-value store used to share the hash ring across multiple instances.
+  # This option needs be set on ingesters, distributors, queriers and rulers
+  # when running in microservices mode.
+  kvstore:
+    # Backend storage to use for the ring. Supported values are: consul, etcd,
+    # inmemory, memberlist, multi.
+    # CLI flag: -ingester.ring.store
+    [store: <string> | default = "memberlist"]
+
+    # (advanced) The prefix for the keys in the store. Should end with a /.
+    # CLI flag: -ingester.ring.prefix
+    [prefix: <string> | default = "collectors/"]
+
+    # The consul block configures the consul client.
+    # The CLI flags prefix for this block configuration is: ingester.ring
+    [consul: <consul>]
+
+    # The etcd block configures the etcd client.
+    # The CLI flags prefix for this block configuration is: ingester.ring
+    [etcd: <etcd>]
+
+    multi:
+      # (advanced) Primary backend storage used by multi-client.
+      # CLI flag: -ingester.ring.multi.primary
+      [primary: <string> | default = ""]
+
+      # (advanced) Secondary backend storage used by multi-client.
+      # CLI flag: -ingester.ring.multi.secondary
+      [secondary: <string> | default = ""]
+
+      # (advanced) Mirror writes to secondary store.
+      # CLI flag: -ingester.ring.multi.mirror-enabled
+      [mirror_enabled: <boolean> | default = false]
+
+      # (advanced) Timeout for storing value to secondary store.
+      # CLI flag: -ingester.ring.multi.mirror-timeout
+      [mirror_timeout: <duration> | default = 2s]
+
+  # (advanced) Period at which to heartbeat to the ring. 0 = disabled.
+  # CLI flag: -ingester.ring.heartbeat-period
+  [heartbeat_period: <duration> | default = 15s]
+
+  # (advanced) The heartbeat timeout after which ingesters are skipped for
+  # reads/writes. 0 = never (timeout disabled). This option needs be set on
+  # ingesters, distributors, queriers and rulers when running in microservices
+  # mode.
+  # CLI flag: -ingester.ring.heartbeat-timeout
+  [heartbeat_timeout: <duration> | default = 1m]
+
+  # Number of ingesters that each time series is replicated to. This option
+  # needs be set on ingesters, distributors, queriers and rulers when running in
+  # microservices mode.
+  # CLI flag: -ingester.ring.replication-factor
+  [replication_factor: <int> | default = 3]
+
+  # True to enable the zone-awareness and replicate ingested samples across
+  # different availability zones. This option needs be set on ingesters,
+  # distributors, queriers and rulers when running in microservices mode.
+  # CLI flag: -ingester.ring.zone-awareness-enabled
+  [zone_awareness_enabled: <boolean> | default = false]
+
+  # (advanced) Comma-separated list of zones to exclude from the ring. Instances
+  # in excluded zones will be filtered out from the ring. This option needs be
+  # set on ingesters, distributors, queriers and rulers when running in
+  # microservices mode.
+  # CLI flag: -ingester.ring.excluded-zones
+  [excluded_zones: <string> | default = ""]
+
+  # File path where tokens are stored. If empty, tokens are not stored at
+  # shutdown and restored at startup. Must be empty if
+  # -ingester.ring.token-generation-strategy is set to "spread-minimizing".
+  # CLI flag: -ingester.ring.tokens-file-path
+  [tokens_file_path: <string> | default = ""]
+
+  # (advanced) Number of tokens for each ingester.
+  # CLI flag: -ingester.ring.num-tokens
+  [num_tokens: <int> | default = 128]
+
+  # (advanced) Instance ID to register in the ring.
+  # CLI flag: -ingester.ring.instance-id
+  [instance_id: <string> | default = "<hostname>"]
+
+  # (advanced) List of network interface names to look up when finding the
+  # instance IP address.
+  # CLI flag: -ingester.ring.instance-interface-names
+  [instance_interface_names: <list of strings> | default = [<private network interfaces>]]
+
+  # (advanced) Port to advertise in the ring (defaults to
+  # -server.grpc-listen-port).
+  # CLI flag: -ingester.ring.instance-port
+  [instance_port: <int> | default = 0]
+
+  # (advanced) IP address to advertise in the ring. Default is auto-detected.
+  # CLI flag: -ingester.ring.instance-addr
+  [instance_addr: <string> | default = ""]
+
+  # (advanced) Enable using a IPv6 instance address. (default false)
+  # CLI flag: -ingester.ring.instance-enable-ipv6
+  [instance_enable_ipv6: <boolean> | default = false]
+
+  # (advanced) The availability zone where this instance is running.
+  # CLI flag: -ingester.ring.instance-availability-zone
+  [instance_availability_zone: <string> | default = ""]
+
+  # (advanced) Unregister from the ring upon clean shutdown. It can be useful to
+  # disable for rolling restarts with consistent naming.
+  # CLI flag: -ingester.ring.unregister-on-shutdown
+  [unregister_on_shutdown: <boolean> | default = true]
+
+  # (advanced) Observe tokens after generating to resolve collisions. Useful
+  # when using gossiping ring.
+  # CLI flag: -ingester.ring.observe-period
+  [observe_period: <duration> | default = 0s]
+
+  # (advanced) Minimum duration to wait after the internal readiness checks have
+  # passed but before succeeding the readiness endpoint. This is used to
+  # slowdown deployment controllers (eg. Kubernetes) after an instance is ready
+  # and before they proceed with a rolling update, to give the rest of the
+  # cluster instances enough time to receive ring updates.
+  # CLI flag: -ingester.ring.min-ready-duration
+  [min_ready_duration: <duration> | default = 15s]
+
+  # (advanced) Duration to sleep for before exiting, to ensure metrics are
+  # scraped.
+  # CLI flag: -ingester.ring.final-sleep
+  [final_sleep: <duration> | default = 0s]
+
+  # (advanced) Specifies the strategy used for generating tokens for ingesters.
+  # Supported values are: random,spread-minimizing.
+  # CLI flag: -ingester.ring.token-generation-strategy
+  [token_generation_strategy: <string> | default = "random"]
+
+  # (advanced) True to allow this ingester registering tokens in the ring only
+  # after all previous ingesters (with ID lower than the current one) have
+  # already been registered. This configuration option is supported only when
+  # the token generation strategy is set to "spread-minimizing".
+  # CLI flag: -ingester.ring.spread-minimizing-join-ring-in-order
+  [spread_minimizing_join_ring_in_order: <boolean> | default = false]
+
+  # (advanced) Comma-separated list of zones in which spread minimizing strategy
+  # is used for token generation. This value must include all zones in which
+  # ingesters are deployed, and must not change over time. This configuration is
+  # used only when "token-generation-strategy" is set to "spread-minimizing".
+  # CLI flag: -ingester.ring.spread-minimizing-zones
+  [spread_minimizing_zones: <string> | default = ""]
+
+# (advanced) Period at which metadata we have not seen will remain in memory
+# before being deleted.
+# CLI flag: -ingester.metadata-retain-period
+[metadata_retain_period: <duration> | default = 10m]
+
+# (advanced) Period with which to update the per-tenant ingestion rates.
+# CLI flag: -ingester.rate-update-period
+[rate_update_period: <duration> | default = 15s]
+
+# (advanced) Enable tracking of active series and export them as metrics.
+# CLI flag: -ingester.active-series-metrics-enabled
+[active_series_metrics_enabled: <boolean> | default = true]
+
+# (advanced) How often to update active series metrics.
+# CLI flag: -ingester.active-series-metrics-update-period
+[active_series_metrics_update_period: <duration> | default = 1m]
+
+# (advanced) After what time a series is considered to be inactive.
+# CLI flag: -ingester.active-series-metrics-idle-timeout
+[active_series_metrics_idle_timeout: <duration> | default = 10m]
+
+# (experimental) Period with which to update the per-tenant TSDB configuration.
+# CLI flag: -ingester.tsdb-config-update-period
+[tsdb_config_update_period: <duration> | default = 15s]
+
+instance_limits:
+  # (advanced) Max ingestion rate (samples/sec) that ingester will accept. This
+  # limit is per-ingester, not per-tenant. Additional push requests will be
+  # rejected. Current ingestion rate is computed as exponentially weighted
+  # moving average, updated every second. 0 = unlimited.
+  # CLI flag: -ingester.instance-limits.max-ingestion-rate
+  [max_ingestion_rate: <float> | default = 0]
+
+  # (advanced) Max tenants that this ingester can hold. Requests from additional
+  # tenants will be rejected. 0 = unlimited.
+  # CLI flag: -ingester.instance-limits.max-tenants
+  [max_tenants: <int> | default = 0]
+
+  # (advanced) Max series that this ingester can hold (across all tenants).
+  # Requests to create additional series will be rejected. 0 = unlimited.
+  # CLI flag: -ingester.instance-limits.max-series
+  [max_series: <int> | default = 0]
+
+  # (advanced) Max inflight push requests that this ingester can handle (across
+  # all tenants). Additional requests will be rejected. 0 = unlimited.
+  # CLI flag: -ingester.instance-limits.max-inflight-push-requests
+  [max_inflight_push_requests: <int> | default = 30000]
+
+  # (advanced) The sum of the request sizes in bytes of inflight push requests
+  # that this ingester can handle. This limit is per-ingester, not per-tenant.
+  # Additional requests will be rejected. 0 = unlimited.
+  # CLI flag: -ingester.instance-limits.max-inflight-push-requests-bytes
+  [max_inflight_push_requests_bytes: <int> | default = 0]
+
+# (advanced) Comma-separated list of metric names, for which the
+# -ingester.max-global-series-per-metric limit will be ignored. Does not affect
+# the -ingester.max-global-series-per-user limit.
+# CLI flag: -ingester.ignore-series-limit-for-metric-names
+[ignore_series_limit_for_metric_names: <string> | default = ""]
+
+# (experimental) CPU utilization limit, as CPU cores, for CPU/memory utilization
+# based read request limiting. Use 0 to disable it.
+# CLI flag: -ingester.read-path-cpu-utilization-limit
+[read_path_cpu_utilization_limit: <float> | default = 0]
+
+# (experimental) Memory limit, in bytes, for CPU/memory utilization based read
+# request limiting. Use 0 to disable it.
+# CLI flag: -ingester.read-path-memory-utilization-limit
+[read_path_memory_utilization_limit: <int> | default = 0]
+
+# (experimental) Enable logging of utilization based limiter CPU samples.
+# CLI flag: -ingester.log-utilization-based-limiter-cpu-samples
+[log_utilization_based_limiter_cpu_samples: <boolean> | default = false]
+
+# (deprecated) When enabled, in-flight write requests limit is checked as soon
+# as the gRPC request is received, before the request is decoded and parsed.
+# CLI flag: -ingester.limit-inflight-requests-using-grpc-method-limiter
+[limit_inflight_requests_using_grpc_method_limiter: <boolean> | default = true]
+
+# (experimental) Each error will be logged once in this many times. Use 0 to log
+# all of them.
+# CLI flag: -ingester.error-sample-rate
+[error_sample_rate: <int> | default = 0]
+
+# (deprecated) When enabled only gRPC errors will be returned by the ingester.
+# CLI flag: -ingester.return-only-grpc-errors
+[return_only_grpc_errors: <boolean> | default = true]
+
+# (experimental) When enabled, only series currently owned by ingester according
+# to the ring are used when checking user per-tenant series limit.
+# CLI flag: -ingester.use-ingester-owned-series-for-limits
+[use_ingester_owned_series_for_limits: <boolean> | default = false]
+
+# (experimental) This option enables tracking of ingester-owned series based on
+# ring state, even if -ingester.use-ingester-owned-series-for-limits is
+# disabled.
+# CLI flag: -ingester.track-ingester-owned-series
+[track_ingester_owned_series: <boolean> | default = false]
+
+# (experimental) How often to check for ring changes and possibly recompute
+# owned series as a result of detected change.
+# CLI flag: -ingester.owned-series-update-interval
+[owned_series_update_interval: <duration> | default = 15s]

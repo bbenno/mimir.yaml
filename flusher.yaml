@@ -1,0 +1,4 @@
+# (advanced) Stop after flush has finished. If false, process will keep running,
+# doing nothing.
+# CLI flag: -flusher.exit-after-flush
+[exit_after_flush: <boolean> | default = true]

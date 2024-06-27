@@ -1,0 +1,260 @@
+# URL of alerts return path.
+# CLI flag: -ruler.external.url
+[external_url: <url> | default = ]
+
+# Configures the gRPC client used to communicate between ruler instances.
+# The CLI flags prefix for this block configuration is: ruler.client
+[ruler_client: <grpc_client>]
+
+# (advanced) How frequently to evaluate rules
+# CLI flag: -ruler.evaluation-interval
+[evaluation_interval: <duration> | default = 1m]
+
+# (advanced) How frequently the configured rule groups are re-synced from the
+# object storage.
+# CLI flag: -ruler.poll-interval
+[poll_interval: <duration> | default = 10m]
+
+# Directory to store temporary rule files loaded by the Prometheus rule
+# managers. This directory is not required to be persisted between restarts.
+# CLI flag: -ruler.rule-path
+[rule_path: <string> | default = "./data-ruler/"]
+
+# Comma-separated list of URL(s) of the Alertmanager(s) to send notifications
+# to. Each URL is treated as a separate group. Multiple Alertmanagers in HA per
+# group can be supported by using DNS service discovery format, comprehensive of
+# the scheme. Basic auth is supported as part of the URL.
+# CLI flag: -ruler.alertmanager-url
+[alertmanager_url: <string> | default = ""]
+
+# (advanced) How long to wait between refreshing DNS resolutions of Alertmanager
+# hosts.
+# CLI flag: -ruler.alertmanager-refresh-interval
+[alertmanager_refresh_interval: <duration> | default = 1m]
+
+# (advanced) Capacity of the queue for notifications to be sent to the
+# Alertmanager.
+# CLI flag: -ruler.notification-queue-capacity
+[notification_queue_capacity: <int> | default = 10000]
+
+# (advanced) HTTP timeout duration when sending notifications to the
+# Alertmanager.
+# CLI flag: -ruler.notification-timeout
+[notification_timeout: <duration> | default = 10s]
+
+alertmanager_client:
+  # (advanced) Enable TLS for gRPC client connecting to alertmanager.
+  # CLI flag: -ruler.alertmanager-client.tls-enabled
+  [tls_enabled: <boolean> | default = true]
+
+  # (advanced) Path to the client certificate, which will be used for
+  # authenticating with the server. Also requires the key path to be configured.
+  # CLI flag: -ruler.alertmanager-client.tls-cert-path
+  [tls_cert_path: <string> | default = ""]
+
+  # (advanced) Path to the key for the client certificate. Also requires the
+  # client certificate to be configured.
+  # CLI flag: -ruler.alertmanager-client.tls-key-path
+  [tls_key_path: <string> | default = ""]
+
+  # (advanced) Path to the CA certificates to validate server certificate
+  # against. If not set, the host's root CA certificates are used.
+  # CLI flag: -ruler.alertmanager-client.tls-ca-path
+  [tls_ca_path: <string> | default = ""]
+
+  # (advanced) Override the expected name on the server certificate.
+  # CLI flag: -ruler.alertmanager-client.tls-server-name
+  [tls_server_name: <string> | default = ""]
+
+  # (advanced) Skip validating server certificate.
+  # CLI flag: -ruler.alertmanager-client.tls-insecure-skip-verify
+  [tls_insecure_skip_verify: <boolean> | default = false]
+
+  # (advanced) Override the default cipher suite list (separated by commas).
+  # Allowed values:
+  #
+  # Secure Ciphers:
+  # - TLS_RSA_WITH_AES_128_CBC_SHA
+  # - TLS_RSA_WITH_AES_256_CBC_SHA
+  # - TLS_RSA_WITH_AES_128_GCM_SHA256
+  # - TLS_RSA_WITH_AES_256_GCM_SHA384
+  # - TLS_AES_128_GCM_SHA256
+  # - TLS_AES_256_GCM_SHA384
+  # - TLS_CHACHA20_POLY1305_SHA256
+  # - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+  # - TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+  # - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+  # - TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+  # - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+  # - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+  # - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+  # - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+  # - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+  # - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+  #
+  # Insecure Ciphers:
+  # - TLS_RSA_WITH_RC4_128_SHA
+  # - TLS_RSA_WITH_3DES_EDE_CBC_SHA
+  # - TLS_RSA_WITH_AES_128_CBC_SHA256
+  # - TLS_ECDHE_ECDSA_WITH_RC4_128_SHA
+  # - TLS_ECDHE_RSA_WITH_RC4_128_SHA
+  # - TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA
+  # - TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+  # - TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+  # CLI flag: -ruler.alertmanager-client.tls-cipher-suites
+  [tls_cipher_suites: <string> | default = ""]
+
+  # (advanced) Override the default minimum TLS version. Allowed values:
+  # VersionTLS10, VersionTLS11, VersionTLS12, VersionTLS13
+  # CLI flag: -ruler.alertmanager-client.tls-min-version
+  [tls_min_version: <string> | default = ""]
+
+  # HTTP Basic authentication username. It overrides the username set in the URL
+  # (if any).
+  # CLI flag: -ruler.alertmanager-client.basic-auth-username
+  [basic_auth_username: <string> | default = ""]
+
+  # HTTP Basic authentication password. It overrides the password set in the URL
+  # (if any).
+  # CLI flag: -ruler.alertmanager-client.basic-auth-password
+  [basic_auth_password: <string> | default = ""]
+
+# (advanced) Max time to tolerate outage for restoring "for" state of alert.
+# CLI flag: -ruler.for-outage-tolerance
+[for_outage_tolerance: <duration> | default = 1h]
+
+# (advanced) This grace period controls which alerts the ruler restores after a
+# restart. Alerts with "for" duration lower than this grace period are not
+# restored after a ruler restart. This means that if the alerts have been firing
+# before the ruler restarted, they will now go to pending state and then to
+# firing again after their "for" duration expires. Alerts with "for" duration
+# greater than or equal to this grace period that have been pending before the
+# ruler restart will remain in pending state for at least this grace period.
+# Alerts with "for" duration greater than or equal to this grace period that
+# have been firing before the ruler restart will continue to be firing after the
+# restart.
+# CLI flag: -ruler.for-grace-period
+[for_grace_period: <duration> | default = 2m]
+
+# (advanced) Minimum amount of time to wait before resending an alert to
+# Alertmanager.
+# CLI flag: -ruler.resend-delay
+[resend_delay: <duration> | default = 1m]
+
+ring:
+  # The key-value store used to share the hash ring across multiple instances.
+  kvstore:
+    # Backend storage to use for the ring. Supported values are: consul, etcd,
+    # inmemory, memberlist, multi.
+    # CLI flag: -ruler.ring.store
+    [store: <string> | default = "memberlist"]
+
+    # (advanced) The prefix for the keys in the store. Should end with a /.
+    # CLI flag: -ruler.ring.prefix
+    [prefix: <string> | default = "rulers/"]
+
+    # The consul block configures the consul client.
+    # The CLI flags prefix for this block configuration is: ruler.ring
+    [consul: <consul>]
+
+    # The etcd block configures the etcd client.
+    # The CLI flags prefix for this block configuration is: ruler.ring
+    [etcd: <etcd>]
+
+    multi:
+      # (advanced) Primary backend storage used by multi-client.
+      # CLI flag: -ruler.ring.multi.primary
+      [primary: <string> | default = ""]
+
+      # (advanced) Secondary backend storage used by multi-client.
+      # CLI flag: -ruler.ring.multi.secondary
+      [secondary: <string> | default = ""]
+
+      # (advanced) Mirror writes to secondary store.
+      # CLI flag: -ruler.ring.multi.mirror-enabled
+      [mirror_enabled: <boolean> | default = false]
+
+      # (advanced) Timeout for storing value to secondary store.
+      # CLI flag: -ruler.ring.multi.mirror-timeout
+      [mirror_timeout: <duration> | default = 2s]
+
+  # (advanced) Period at which to heartbeat to the ring. 0 = disabled.
+  # CLI flag: -ruler.ring.heartbeat-period
+  [heartbeat_period: <duration> | default = 15s]
+
+  # (advanced) The heartbeat timeout after which rulers are considered unhealthy
+  # within the ring. 0 = never (timeout disabled).
+  # CLI flag: -ruler.ring.heartbeat-timeout
+  [heartbeat_timeout: <duration> | default = 1m]
+
+  # (advanced) Instance ID to register in the ring.
+  # CLI flag: -ruler.ring.instance-id
+  [instance_id: <string> | default = "<hostname>"]
+
+  # List of network interface names to look up when finding the instance IP
+  # address.
+  # CLI flag: -ruler.ring.instance-interface-names
+  [instance_interface_names: <list of strings> | default = [<private network interfaces>]]
+
+  # (advanced) Port to advertise in the ring (defaults to
+  # -server.grpc-listen-port).
+  # CLI flag: -ruler.ring.instance-port
+  [instance_port: <int> | default = 0]
+
+  # (advanced) IP address to advertise in the ring. Default is auto-detected.
+  # CLI flag: -ruler.ring.instance-addr
+  [instance_addr: <string> | default = ""]
+
+  # (advanced) Enable using a IPv6 instance address. (default false)
+  # CLI flag: -ruler.ring.instance-enable-ipv6
+  [instance_enable_ipv6: <boolean> | default = false]
+
+  # (advanced) Number of tokens for each ruler.
+  # CLI flag: -ruler.ring.num-tokens
+  [num_tokens: <int> | default = 128]
+
+# Enable the ruler config API.
+# CLI flag: -ruler.enable-api
+[enable_api: <boolean> | default = true]
+
+# (advanced) Comma separated list of tenants whose rules this ruler can
+# evaluate. If specified, only these tenants will be handled by ruler, otherwise
+# this ruler can process rules from all tenants. Subject to sharding.
+# CLI flag: -ruler.enabled-tenants
+[enabled_tenants: <string> | default = ""]
+
+# (advanced) Comma separated list of tenants whose rules this ruler cannot
+# evaluate. If specified, a ruler that would normally pick the specified
+# tenant(s) for processing will ignore them instead. Subject to sharding.
+# CLI flag: -ruler.disabled-tenants
+[disabled_tenants: <string> | default = ""]
+
+# (advanced) Report the wall time for ruler queries to complete as a per-tenant
+# metric and as an info level log message.
+# CLI flag: -ruler.query-stats-enabled
+[query_stats_enabled: <boolean> | default = false]
+
+query_frontend:
+  # GRPC listen address of the query-frontend(s). Must be a DNS address
+  # (prefixed with dns:///) to enable client side load balancing.
+  # CLI flag: -ruler.query-frontend.address
+  [address: <string> | default = ""]
+
+  # Configures the gRPC client used to communicate between the rulers and
+  # query-frontends.
+  # The CLI flags prefix for this block configuration is:
+  # ruler.query-frontend.grpc-client-config
+  [grpc_client_config: <grpc_client>]
+
+  # Format to use when retrieving query results from query-frontends. Supported
+  # values: json, protobuf
+  # CLI flag: -ruler.query-frontend.query-result-response-format
+  [query_result_response_format: <string> | default = "protobuf"]
+
+tenant_federation:
+  # Enable rule groups to query against multiple tenants. The tenant IDs
+  # involved need to be in the rule group's 'source_tenants' field. If this flag
+  # is set to 'false' when there are federated rule groups that already exist,
+  # then these rules groups will be skipped during evaluations.
+  # CLI flag: -ruler.tenant-federation.enabled
+  [enabled: <boolean> | default = false]

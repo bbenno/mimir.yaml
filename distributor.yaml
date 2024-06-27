@@ -1,0 +1,207 @@
+pool:
+  # (advanced) How frequently to clean up clients for ingesters that have gone
+  # away.
+  # CLI flag: -distributor.client-cleanup-period
+  [client_cleanup_period: <duration> | default = 15s]
+
+  # (advanced) Run a health check on each ingester client during periodic
+  # cleanup.
+  # CLI flag: -distributor.health-check-ingesters
+  [health_check_ingesters: <boolean> | default = true]
+
+retry_after_header:
+  # (experimental) Enabled controls inclusion of the Retry-After header in the
+  # response: true includes it for client retry guidance, false omits it.
+  # CLI flag: -distributor.retry-after-header.enabled
+  [enabled: <boolean> | default = false]
+
+  # (experimental) Base duration in seconds for calculating the Retry-After
+  # header in responses to 429/5xx errors.
+  # CLI flag: -distributor.retry-after-header.base-seconds
+  [base_seconds: <int> | default = 3]
+
+  # (experimental) Sets the upper limit on the number of Retry-Attempt
+  # considered for calculation. It caps the Retry-Attempt header without
+  # rejecting additional attempts, controlling exponential backoff calculations.
+  # For example, when the base-seconds is set to 3 and max-backoff-exponent to
+  # 5, the maximum retry duration would be 3 * 2^5 = 96 seconds.
+  # CLI flag: -distributor.retry-after-header.max-backoff-exponent
+  [max_backoff_exponent: <int> | default = 5]
+
+ha_tracker:
+  # Enable the distributors HA tracker so that it can accept samples from
+  # Prometheus HA replicas gracefully (requires labels).
+  # CLI flag: -distributor.ha-tracker.enable
+  [enable_ha_tracker: <boolean> | default = false]
+
+  # (advanced) Update the timestamp in the KV store for a given cluster/replica
+  # only after this amount of time has passed since the current stored
+  # timestamp.
+  # CLI flag: -distributor.ha-tracker.update-timeout
+  [ha_tracker_update_timeout: <duration> | default = 15s]
+
+  # (advanced) Maximum jitter applied to the update timeout, in order to spread
+  # the HA heartbeats over time.
+  # CLI flag: -distributor.ha-tracker.update-timeout-jitter-max
+  [ha_tracker_update_timeout_jitter_max: <duration> | default = 5s]
+
+  # (advanced) If we don't receive any samples from the accepted replica for a
+  # cluster in this amount of time we will failover to the next replica we
+  # receive a sample from. This value must be greater than the update timeout
+  # CLI flag: -distributor.ha-tracker.failover-timeout
+  [ha_tracker_failover_timeout: <duration> | default = 30s]
+
+  # Backend storage to use for the ring. Please be aware that memberlist is not
+  # supported by the HA tracker since gossip propagation is too slow for HA
+  # purposes.
+  kvstore:
+    # Backend storage to use for the ring. Supported values are: consul, etcd,
+    # inmemory, memberlist, multi.
+    # CLI flag: -distributor.ha-tracker.store
+    [store: <string> | default = "consul"]
+
+    # (advanced) The prefix for the keys in the store. Should end with a /.
+    # CLI flag: -distributor.ha-tracker.prefix
+    [prefix: <string> | default = "ha-tracker/"]
+
+    # The consul block configures the consul client.
+    # The CLI flags prefix for this block configuration is:
+    # distributor.ha-tracker
+    [consul: <consul>]
+
+    # The etcd block configures the etcd client.
+    # The CLI flags prefix for this block configuration is:
+    # distributor.ha-tracker
+    [etcd: <etcd>]
+
+    multi:
+      # (advanced) Primary backend storage used by multi-client.
+      # CLI flag: -distributor.ha-tracker.multi.primary
+      [primary: <string> | default = ""]
+
+      # (advanced) Secondary backend storage used by multi-client.
+      # CLI flag: -distributor.ha-tracker.multi.secondary
+      [secondary: <string> | default = ""]
+
+      # (advanced) Mirror writes to secondary store.
+      # CLI flag: -distributor.ha-tracker.multi.mirror-enabled
+      [mirror_enabled: <boolean> | default = false]
+
+      # (advanced) Timeout for storing value to secondary store.
+      # CLI flag: -distributor.ha-tracker.multi.mirror-timeout
+      [mirror_timeout: <duration> | default = 2s]
+
+# (advanced) Max message size in bytes that the distributors will accept for
+# incoming push requests to the remote write API. If exceeded, the request will
+# be rejected.
+# CLI flag: -distributor.max-recv-msg-size
+[max_recv_msg_size: <int> | default = 104857600]
+
+# (advanced) Timeout for downstream ingesters.
+# CLI flag: -distributor.remote-timeout
+[remote_timeout: <duration> | default = 2s]
+
+ring:
+  # The key-value store used to share the hash ring across multiple instances.
+  kvstore:
+    # Backend storage to use for the ring. Supported values are: consul, etcd,
+    # inmemory, memberlist, multi.
+    # CLI flag: -distributor.ring.store
+    [store: <string> | default = "memberlist"]
+
+    # (advanced) The prefix for the keys in the store. Should end with a /.
+    # CLI flag: -distributor.ring.prefix
+    [prefix: <string> | default = "collectors/"]
+
+    # The consul block configures the consul client.
+    # The CLI flags prefix for this block configuration is: distributor.ring
+    [consul: <consul>]
+
+    # The etcd block configures the etcd client.
+    # The CLI flags prefix for this block configuration is: distributor.ring
+    [etcd: <etcd>]
+
+    multi:
+      # (advanced) Primary backend storage used by multi-client.
+      # CLI flag: -distributor.ring.multi.primary
+      [primary: <string> | default = ""]
+
+      # (advanced) Secondary backend storage used by multi-client.
+      # CLI flag: -distributor.ring.multi.secondary
+      [secondary: <string> | default = ""]
+
+      # (advanced) Mirror writes to secondary store.
+      # CLI flag: -distributor.ring.multi.mirror-enabled
+      [mirror_enabled: <boolean> | default = false]
+
+      # (advanced) Timeout for storing value to secondary store.
+      # CLI flag: -distributor.ring.multi.mirror-timeout
+      [mirror_timeout: <duration> | default = 2s]
+
+  # (advanced) Period at which to heartbeat to the ring. 0 = disabled.
+  # CLI flag: -distributor.ring.heartbeat-period
+  [heartbeat_period: <duration> | default = 15s]
+
+  # (advanced) The heartbeat timeout after which distributors are considered
+  # unhealthy within the ring. 0 = never (timeout disabled).
+  # CLI flag: -distributor.ring.heartbeat-timeout
+  [heartbeat_timeout: <duration> | default = 1m]
+
+  # (advanced) Instance ID to register in the ring.
+  # CLI flag: -distributor.ring.instance-id
+  [instance_id: <string> | default = "<hostname>"]
+
+  # List of network interface names to look up when finding the instance IP
+  # address.
+  # CLI flag: -distributor.ring.instance-interface-names
+  [instance_interface_names: <list of strings> | default = [<private network interfaces>]]
+
+  # (advanced) Port to advertise in the ring (defaults to
+  # -server.grpc-listen-port).
+  # CLI flag: -distributor.ring.instance-port
+  [instance_port: <int> | default = 0]
+
+  # (advanced) IP address to advertise in the ring. Default is auto-detected.
+  # CLI flag: -distributor.ring.instance-addr
+  [instance_addr: <string> | default = ""]
+
+  # (advanced) Enable using a IPv6 instance address. (default false)
+  # CLI flag: -distributor.ring.instance-enable-ipv6
+  [instance_enable_ipv6: <boolean> | default = false]
+
+instance_limits:
+  # (advanced) Max ingestion rate (samples/sec) that this distributor will
+  # accept. This limit is per-distributor, not per-tenant. Additional push
+  # requests will be rejected. Current ingestion rate is computed as
+  # exponentially weighted moving average, updated every second. 0 = unlimited.
+  # CLI flag: -distributor.instance-limits.max-ingestion-rate
+  [max_ingestion_rate: <float> | default = 0]
+
+  # (advanced) Max inflight push requests that this distributor can handle. This
+  # limit is per-distributor, not per-tenant. Additional requests will be
+  # rejected. 0 = unlimited.
+  # CLI flag: -distributor.instance-limits.max-inflight-push-requests
+  [max_inflight_push_requests: <int> | default = 2000]
+
+  # (advanced) The sum of the request sizes in bytes of inflight push requests
+  # that this distributor can handle. This limit is per-distributor, not
+  # per-tenant. Additional requests will be rejected. 0 = unlimited.
+  # CLI flag: -distributor.instance-limits.max-inflight-push-requests-bytes
+  [max_inflight_push_requests_bytes: <int> | default = 0]
+
+# (experimental) Enable pooling of buffers used for marshaling write requests.
+# CLI flag: -distributor.write-requests-buffer-pooling-enabled
+[write_requests_buffer_pooling_enabled: <boolean> | default = true]
+
+# (deprecated) When enabled, in-flight write requests limit is checked as soon
+# as the gRPC request is received, before the request is decoded and parsed.
+# CLI flag: -distributor.limit-inflight-requests-using-grpc-method-limiter
+[limit_inflight_requests_using_grpc_method_limiter: <boolean> | default = true]
+
+# (advanced) Number of pre-allocated workers used to forward push requests to
+# the ingesters. If 0, no workers will be used and a new goroutine will be
+# spawned for each ingester push request. If not enough workers available, new
+# goroutine will be spawned. (Note: this is a performance optimization, not a
+# limiting feature.)
+# CLI flag: -distributor.reusable-ingester-push-workers
+[reusable_ingester_push_workers: <int> | default = 2000]

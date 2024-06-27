@@ -1,0 +1,152 @@
+# Log queries that are slower than the specified duration. Set to 0 to disable.
+# Set to < 0 to enable on all queries.
+# CLI flag: -query-frontend.log-queries-longer-than
+[log_queries_longer_than: <duration> | default = 0s]
+
+# (advanced) Comma-separated list of request header names to include in query
+# logs. Applies to both query stats and slow queries logs.
+# CLI flag: -query-frontend.log-query-request-headers
+[log_query_request_headers: <string> | default = ""]
+
+# (advanced) Max body size for downstream prometheus.
+# CLI flag: -query-frontend.max-body-size
+[max_body_size: <int> | default = 10485760]
+
+# (advanced) False to disable query statistics tracking. When enabled, a message
+# with some statistics is logged for every query.
+# CLI flag: -query-frontend.query-stats-enabled
+[query_stats_enabled: <boolean> | default = true]
+
+# (experimental) Timeout for writing active series responses. 0 means the value
+# from `-server.http-write-timeout` is used.
+# CLI flag: -query-frontend.active-series-write-timeout
+[active_series_write_timeout: <duration> | default = 5m]
+
+# (advanced) Maximum number of outstanding requests per tenant per frontend;
+# requests beyond this error with HTTP 429.
+# CLI flag: -querier.max-outstanding-requests-per-tenant
+[max_outstanding_per_tenant: <int> | default = 100]
+
+# (experimental) If a querier disconnects without sending notification about
+# graceful shutdown, the query-frontend will keep the querier in the tenant's
+# shard until the forget delay has passed. This feature is useful to reduce the
+# blast radius when shuffle-sharding is enabled.
+# CLI flag: -query-frontend.querier-forget-delay
+[querier_forget_delay: <duration> | default = 0s]
+
+# Address of the query-scheduler component, in host:port format. The host should
+# resolve to all query-scheduler instances. This option should be set only when
+# query-scheduler component is in use and
+# -query-scheduler.service-discovery-mode is set to 'dns'.
+# CLI flag: -query-frontend.scheduler-address
+[scheduler_address: <string> | default = ""]
+
+# (advanced) How often to resolve the scheduler-address, in order to look for
+# new query-scheduler instances.
+# CLI flag: -query-frontend.scheduler-dns-lookup-period
+[scheduler_dns_lookup_period: <duration> | default = 10s]
+
+# (advanced) Number of concurrent workers forwarding queries to single
+# query-scheduler.
+# CLI flag: -query-frontend.scheduler-worker-concurrency
+[scheduler_worker_concurrency: <int> | default = 5]
+
+# Configures the gRPC client used to communicate between the query-frontends and
+# the query-schedulers.
+# The CLI flags prefix for this block configuration is:
+# query-frontend.grpc-client-config
+[grpc_client_config: <grpc_client>]
+
+# (advanced) List of network interface names to look up when finding the
+# instance IP address. This address is sent to query-scheduler and querier,
+# which uses it to send the query response back to query-frontend.
+# CLI flag: -query-frontend.instance-interface-names
+[instance_interface_names: <list of strings> | default = [<private network interfaces>]]
+
+# (advanced) Enable using a IPv6 instance address (default false).
+# CLI flag: -query-frontend.instance-enable-ipv6
+[instance_enable_ipv6: <boolean> | default = false]
+
+# (advanced) IP address to advertise to the querier (via scheduler) (default is
+# auto-detected from network interfaces).
+# CLI flag: -query-frontend.instance-addr
+[address: <string> | default = ""]
+
+# (advanced) Port to advertise to querier (via scheduler) (defaults to
+# server.grpc-listen-port).
+# CLI flag: -query-frontend.instance-port
+[port: <int> | default = 0]
+
+# (experimental) Enqueue query requests with additional queue dimensions to
+# split tenant request queues into subqueues. This enables separate requests to
+# proceed from a tenant's subqueues even when other subqueues are blocked on
+# slow query requests. Must be set on both query-frontend and scheduler to take
+# effect. (default false)
+# CLI flag: -query-frontend.additional-query-queue-dimensions-enabled
+[additional_query_queue_dimensions_enabled: <boolean> | default = false]
+
+# (advanced) Split range queries by an interval and execute in parallel. You
+# should use a multiple of 24 hours to optimize querying blocks. 0 to disable
+# it.
+# CLI flag: -query-frontend.split-queries-by-interval
+[split_queries_by_interval: <duration> | default = 24h]
+
+results_cache:
+  # Backend for query-frontend results cache, if not empty. Supported values:
+  # memcached, redis.
+  # CLI flag: -query-frontend.results-cache.backend
+  [backend: <string> | default = ""]
+
+  # The memcached block configures the Memcached-based caching backend.
+  # The CLI flags prefix for this block configuration is:
+  # query-frontend.results-cache
+  [memcached: <memcached>]
+
+  # The redis block configures the Redis-based caching backend.
+  # The CLI flags prefix for this block configuration is:
+  # query-frontend.results-cache
+  [redis: <redis>]
+
+  # Enable cache compression, if not empty. Supported values are: snappy.
+  # CLI flag: -query-frontend.results-cache.compression
+  [compression: <string> | default = ""]
+
+# Cache query results.
+# CLI flag: -query-frontend.cache-results
+[cache_results: <boolean> | default = false]
+
+# (advanced) Maximum number of retries for a single request; beyond this, the
+# downstream error is returned.
+# CLI flag: -query-frontend.max-retries-per-request
+[max_retries: <int> | default = 5]
+
+# (advanced) Maximum time to wait for the query-frontend to become ready before
+# rejecting requests received before the frontend was ready. 0 to disable (i.e.
+# fail immediately if a request is received while the frontend is still starting
+# up)
+# CLI flag: -query-frontend.not-running-timeout
+[not_running_timeout: <duration> | default = 2s]
+
+# True to enable query sharding.
+# CLI flag: -query-frontend.parallelize-shardable-queries
+[parallelize_shardable_queries: <boolean> | default = false]
+
+# (advanced) How many series a single sharded partial query should load at most.
+# This is not a strict requirement guaranteed to be honoured by query sharding,
+# but a hint given to the query sharding when the query execution is initially
+# planned. 0 to disable cardinality-based hints.
+# CLI flag: -query-frontend.query-sharding-target-series-per-shard
+[query_sharding_target_series_per_shard: <int> | default = 0]
+
+# (experimental) True to enable sharding of active series queries.
+# CLI flag: -query-frontend.shard-active-series-queries
+[shard_active_series_queries: <boolean> | default = false]
+
+# Format to use when retrieving query results from queriers. Supported values:
+# json, protobuf
+# CLI flag: -query-frontend.query-result-response-format
+[query_result_response_format: <string> | default = "protobuf"]
+
+# (advanced) URL of downstream Prometheus.
+# CLI flag: -query-frontend.downstream-url
+[downstream_url: <string> | default = ""]

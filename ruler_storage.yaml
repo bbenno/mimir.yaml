@@ -1,0 +1,53 @@
+# Backend storage to use. Supported backends are: s3, gcs, azure, swift,
+# filesystem, local.
+# CLI flag: -ruler-storage.backend
+[backend: <string> | default = "filesystem"]
+
+# The s3_backend block configures the connection to Amazon S3 object storage
+# backend.
+# The CLI flags prefix for this block configuration is: ruler-storage
+[s3: <s3_storage_backend>]
+
+# The gcs_backend block configures the connection to Google Cloud Storage object
+# storage backend.
+# The CLI flags prefix for this block configuration is: ruler-storage
+[gcs: <gcs_storage_backend>]
+
+# The azure_storage_backend block configures the connection to Azure object
+# storage backend.
+# The CLI flags prefix for this block configuration is: ruler-storage
+[azure: <azure_storage_backend>]
+
+# The swift_storage_backend block configures the connection to OpenStack Object
+# Storage (Swift) object storage backend.
+# The CLI flags prefix for this block configuration is: ruler-storage
+[swift: <swift_storage_backend>]
+
+# The filesystem_storage_backend block configures the usage of local file system
+# as object storage backend.
+# The CLI flags prefix for this block configuration is: ruler-storage
+[filesystem: <filesystem_storage_backend>]
+
+# Prefix for all objects stored in the backend storage. For simplicity, it may
+# only contain digits and English alphabet letters.
+# CLI flag: -ruler-storage.storage-prefix
+[storage_prefix: <string> | default = ""]
+
+local:
+  # Directory to scan for rules
+  # CLI flag: -ruler-storage.local.directory
+  [directory: <string> | default = ""]
+
+cache:
+  # Backend for ruler storage cache, if not empty. The cache is supported for
+  # any storage backend except "local". Supported values: memcached, redis.
+  # CLI flag: -ruler-storage.cache.backend
+  [backend: <string> | default = ""]
+
+  # The memcached block configures the Memcached-based caching backend.
+  # The CLI flags prefix for this block configuration is: ruler-storage.cache
+  [memcached: <memcached>]
+
+  # The redis block configures the Redis-based caching backend.
+  # The CLI flags prefix for this block configuration is: ruler-storage.cache
+  [redis: <redis>]

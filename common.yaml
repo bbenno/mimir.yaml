@@ -1,0 +1,30 @@
+storage:
+  # Backend storage to use. Supported backends are: s3, gcs, azure, swift,
+  # filesystem.
+  # CLI flag: -common.storage.backend
+  [backend: <string> | default = "filesystem"]
+
+  # The s3_backend block configures the connection to Amazon S3 object storage
+  # backend.
+  # The CLI flags prefix for this block configuration is: common.storage
+  [s3: <s3_storage_backend>]
+
+  # The gcs_backend block configures the connection to Google Cloud Storage
+  # object storage backend.
+  # The CLI flags prefix for this block configuration is: common.storage
+  [gcs: <gcs_storage_backend>]
+
+  # The azure_storage_backend block configures the connection to Azure object
+  # storage backend.
+  # The CLI flags prefix for this block configuration is: common.storage
+  [azure: <azure_storage_backend>]
+
+  # The swift_storage_backend block configures the connection to OpenStack
+  # Object Storage (Swift) object storage backend.
+  # The CLI flags prefix for this block configuration is: common.storage
+  [swift: <swift_storage_backend>]
+
+  # The filesystem_storage_backend block configures the usage of local file
+  # system as object storage backend.
+  # The CLI flags prefix for this block configuration is: common.storage
+  [filesystem: <filesystem_storage_backend>]

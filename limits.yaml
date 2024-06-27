@@ -1,0 +1,515 @@
+# Per-tenant push request rate limit in requests per second. 0 to disable.
+# CLI flag: -distributor.request-rate-limit
+[request_rate: <float> | default = 0]
+
+# Per-tenant allowed push request burst size. 0 to disable.
+# CLI flag: -distributor.request-burst-size
+[request_burst_size: <int> | default = 0]
+
+# Per-tenant ingestion rate limit in samples per second.
+# CLI flag: -distributor.ingestion-rate-limit
+[ingestion_rate: <float> | default = 10000]
+
+# Per-tenant allowed ingestion burst size (in number of samples).
+# CLI flag: -distributor.ingestion-burst-size
+[ingestion_burst_size: <int> | default = 200000]
+
+# (experimental) Per-tenant burst factor which is the maximum burst size allowed
+# as a multiple of the per-tenant ingestion rate, this burst-factor must be
+# greater than or equal to 1. If this is set it will override the
+# ingestion-burst-size option.
+# CLI flag: -distributor.ingestion-burst-factor
+[ingestion_burst_factor: <float> | default = 0]
+
+# Flag to enable, for all tenants, handling of samples with external labels
+# identifying replicas in an HA Prometheus setup.
+# CLI flag: -distributor.ha-tracker.enable-for-all-users
+[accept_ha_samples: <boolean> | default = false]
+
+# Prometheus label to look for in samples to identify a Prometheus HA cluster.
+# CLI flag: -distributor.ha-tracker.cluster
+[ha_cluster_label: <string> | default = "cluster"]
+
+# Prometheus label to look for in samples to identify a Prometheus HA replica.
+# CLI flag: -distributor.ha-tracker.replica
+[ha_replica_label: <string> | default = "__replica__"]
+
+# Maximum number of clusters that HA tracker will keep track of for a single
+# tenant. 0 to disable the limit.
+# CLI flag: -distributor.ha-tracker.max-clusters
+[ha_max_clusters: <int> | default = 100]
+
+# (advanced) This flag can be used to specify label names that to drop during
+# sample ingestion within the distributor and can be repeated in order to drop
+# multiple labels.
+# CLI flag: -distributor.drop-label
+[drop_labels: <list of strings> | default = []]
+
+# Maximum length accepted for label names
+# CLI flag: -validation.max-length-label-name
+[max_label_name_length: <int> | default = 1024]
+
+# Maximum length accepted for label value. This setting also applies to the
+# metric name
+# CLI flag: -validation.max-length-label-value
+[max_label_value_length: <int> | default = 2048]
+
+# Maximum number of label names per series.
+# CLI flag: -validation.max-label-names-per-series
+[max_label_names_per_series: <int> | default = 30]
+
+# Maximum length accepted for metric metadata. Metadata refers to Metric Name,
+# HELP and UNIT. Longer metadata is dropped except for HELP which is truncated.
+# CLI flag: -validation.max-metadata-length
+[max_metadata_length: <int> | default = 1024]
+
+# Maximum number of buckets per native histogram sample. 0 to disable the limit.
+# CLI flag: -validation.max-native-histogram-buckets
+[max_native_histogram_buckets: <int> | default = 0]
+
+# Whether to reduce or reject native histogram samples with more buckets than
+# the configured limit.
+# CLI flag: -validation.reduce-native-histogram-over-max-buckets
+[reduce_native_histogram_over_max_buckets: <boolean> | default = true]
+
+# (advanced) Controls how far into the future incoming samples and exemplars are
+# accepted compared to the wall clock. Any sample or exemplar will be rejected
+# if its timestamp is greater than '(now + grace_period)'. This configuration is
+# enforced in the distributor, ingester and query-frontend (to avoid querying
+# too far into the future).
+# CLI flag: -validation.create-grace-period
+[creation_grace_period: <duration> | default = 10m]
+
+# (advanced) Enforce every metadata has a metric name.
+# CLI flag: -validation.enforce-metadata-metric-name
+[enforce_metadata_metric_name: <boolean> | default = true]
+
+# The tenant's shard size used by shuffle-sharding. This value is the total size
+# of the shard (ie. it is not the number of ingesters in the shard per zone, but
+# the number of ingesters in the shard across all zones, if zone-awareness is
+# enabled). Must be set both on ingesters and distributors. 0 disables shuffle
+# sharding.
+# CLI flag: -distributor.ingestion-tenant-shard-size
+[ingestion_tenant_shard_size: <int> | default = 0]
+
+# (experimental) List of metric relabel configurations. Note that in most
+# situations, it is more effective to use metrics relabeling directly in the
+# Prometheus server, e.g. remote_write.write_relabel_configs. Labels available
+# during the relabeling phase and cleaned afterwards: __meta_tenant_id
+[metric_relabel_configs: <relabel_config...> | default = ]
+
+# (experimental) Enable metric relabeling for the tenant. This configuration
+# option can be used to forcefully disable metric relabeling on a per-tenant
+# basis.
+# CLI flag: -distributor.metric-relabeling-enabled
+[metric_relabeling_enabled: <boolean> | default = true]
+
+# (experimental) If enabled, rate limit errors will be reported to the client
+# with HTTP status code 529 (Service is overloaded). If disabled, status code
+# 429 (Too Many Requests) is used. Enabling
+# -distributor.retry-after-header.enabled before utilizing this option is
+# strongly recommended as it helps prevent premature request retries by the
+# client.
+# CLI flag: -distributor.service-overload-status-code-on-rate-limit-enabled
+[service_overload_status_code_on_rate_limit_enabled: <boolean> | default = false]
+
+# The maximum number of in-memory series per tenant, across the cluster before
+# replication. 0 to disable.
+# CLI flag: -ingester.max-global-series-per-user
+[max_global_series_per_user: <int> | default = 150000]
+
+# The maximum number of in-memory series per metric name, across the cluster
+# before replication. 0 to disable.
+# CLI flag: -ingester.max-global-series-per-metric
+[max_global_series_per_metric: <int> | default = 0]
+
+# The maximum number of in-memory metrics with metadata per tenant, across the
+# cluster. 0 to disable.
+# CLI flag: -ingester.max-global-metadata-per-user
+[max_global_metadata_per_user: <int> | default = 0]
+
+# The maximum number of metadata per metric, across the cluster. 0 to disable.
+# CLI flag: -ingester.max-global-metadata-per-metric
+[max_global_metadata_per_metric: <int> | default = 0]
+
+# (experimental) The maximum number of exemplars in memory, across the cluster.
+# 0 to disable exemplars ingestion.
+# CLI flag: -ingester.max-global-exemplars-per-user
+[max_global_exemplars_per_user: <int> | default = 0]
+
+# (experimental) Enable ingestion of native histogram samples. If false, native
+# histogram samples are ignored without an error. To query native histograms
+# with query-sharding enabled make sure to set
+# -query-frontend.query-result-response-format to 'protobuf'.
+# CLI flag: -ingester.native-histograms-ingestion-enabled
+[native_histograms_ingestion_enabled: <boolean> | default = false]
+
+# (advanced) Additional custom trackers for active metrics. If there are active
+# series matching a provided matcher (map value), the count will be exposed in
+# the custom trackers metric labeled using the tracker name (map key). Zero
+# valued counts are not exposed (and removed when they go back to zero).
+# Example:
+#   The following configuration will count the active series coming from dev and
+#   prod namespaces for each tenant and label them as {name="dev"} and
+#   {name="prod"} in the cortex_ingester_active_series_custom_tracker metric.
+#   active_series_custom_trackers:
+#       dev: '{namespace=~"dev-.*"}'
+#       prod: '{namespace=~"prod-.*"}'
+# CLI flag: -ingester.active-series-custom-trackers
+[active_series_custom_trackers: <map of tracker name (string) to matcher (string)> | default = ]
+
+# (experimental) Non-zero value enables out-of-order support for most recent
+# samples that are within the time window in relation to the TSDB's maximum
+# time, i.e., within [db.maxTime-timeWindow, db.maxTime]). The ingester will
+# need more memory as a factor of rate of out-of-order samples being ingested
+# and the number of series that are getting out-of-order samples. If query falls
+# into this window, cached results will use value from
+# -query-frontend.results-cache-ttl-for-out-of-order-time-window option to
+# specify TTL for resulting cache entry.
+# CLI flag: -ingester.out-of-order-time-window
+[out_of_order_time_window: <duration> | default = 0s]
+
+# (experimental) Whether the shipper should label out-of-order blocks with an
+# external label before uploading them. Setting this label will compact
+# out-of-order blocks separately from non-out-of-order blocks
+# CLI flag: -ingester.out-of-order-blocks-external-label-enabled
+[out_of_order_blocks_external_label_enabled: <boolean> | default = false]
+
+# (experimental) Label used to define the group label for metrics separation.
+# For each write request, the group is obtained from the first non-empty group
+# label from the first timeseries in the incoming list of timeseries. Specific
+# distributor and ingester metrics will be further separated adding a 'group'
+# label with group label's value. Currently applies to the following metrics:
+# cortex_discarded_samples_total
+# CLI flag: -validation.separate-metrics-group-label
+[separate_metrics_group_label: <string> | default = ""]
+
+# Maximum number of chunks that can be fetched in a single query from ingesters
+# and long-term storage. This limit is enforced in the querier, ruler and
+# store-gateway. 0 to disable.
+# CLI flag: -querier.max-fetched-chunks-per-query
+[max_fetched_chunks_per_query: <int> | default = 2000000]
+
+# (experimental) Maximum number of chunks estimated to be fetched in a single
+# query from ingesters and long-term storage, as a multiple of
+# -querier.max-fetched-chunks-per-query. This limit is enforced in the querier.
+# Must be greater than or equal to 1, or 0 to disable.
+# CLI flag: -querier.max-estimated-fetched-chunks-per-query-multiplier
+[max_estimated_fetched_chunks_per_query_multiplier: <float> | default = 0]
+
+# The maximum number of unique series for which a query can fetch samples from
+# each ingesters and storage. This limit is enforced in the querier, ruler and
+# store-gateway. 0 to disable
+# CLI flag: -querier.max-fetched-series-per-query
+[max_fetched_series_per_query: <int> | default = 0]
+
+# The maximum size of all chunks in bytes that a query can fetch from each
+# ingester and storage. This limit is enforced in the querier and ruler. 0 to
+# disable.
+# CLI flag: -querier.max-fetched-chunk-bytes-per-query
+[max_fetched_chunk_bytes_per_query: <int> | default = 0]
+
+# Limit how long back data (series and metadata) can be queried, up until
+# <lookback> duration ago. This limit is enforced in the query-frontend, querier
+# and ruler. If the requested time range is outside the allowed range, the
+# request will not fail but will be manipulated to only query data within the
+# allowed time range. 0 to disable.
+# CLI flag: -querier.max-query-lookback
+[max_query_lookback: <duration> | default = 0s]
+
+# Limit the time range for partial queries at the querier level.
+# CLI flag: -querier.max-partial-query-length
+[max_partial_query_length: <duration> | default = 0s]
+
+# Maximum number of split (by time) or partial (by shard) queries that will be
+# scheduled in parallel by the query-frontend for a single input query. This
+# limit is introduced to have a fairer query scheduling and avoid a single query
+# over a large time range saturating all available queriers.
+# CLI flag: -querier.max-query-parallelism
+[max_query_parallelism: <int> | default = 14]
+
+# Limit the time range (end - start time) of series, label names and values
+# queries. This limit is enforced in the querier. If the requested time range is
+# outside the allowed range, the request will not fail but will be manipulated
+# to only query data within the allowed time range. 0 to disable.
+# CLI flag: -store.max-labels-query-length
+[max_labels_query_length: <duration> | default = 0s]
+
+# (advanced) Most recent allowed cacheable result per-tenant, to prevent caching
+# very recent results that might still be in flux.
+# CLI flag: -query-frontend.max-cache-freshness
+[max_cache_freshness: <duration> | default = 10m]
+
+# Maximum number of queriers that can handle requests for a single tenant. If
+# set to 0 or value higher than number of available queriers, *all* queriers
+# will handle requests for the tenant. Each frontend (or query-scheduler, if
+# used) will select the same set of queriers for the same tenant (given that all
+# queriers are connected to all frontends / query-schedulers). This option only
+# works with queriers connecting to the query-frontend / query-scheduler, not
+# when using downstream URL.
+# CLI flag: -query-frontend.max-queriers-per-tenant
+[max_queriers_per_tenant: <int> | default = 0]
+
+# The amount of shards to use when doing parallelisation via query sharding by
+# tenant. 0 to disable query sharding for tenant. Query sharding implementation
+# will adjust the number of query shards based on compactor shards. This allows
+# querier to not search the blocks which cannot possibly have the series for
+# given query shard.
+# CLI flag: -query-frontend.query-sharding-total-shards
+[query_sharding_total_shards: <int> | default = 16]
+
+# The max number of sharded queries that can be run for a given received query.
+# 0 to disable limit.
+# CLI flag: -query-frontend.query-sharding-max-sharded-queries
+[query_sharding_max_sharded_queries: <int> | default = 128]
+
+# Disable query sharding for any query containing a regular expression matcher
+# longer than the configured number of bytes. 0 to disable the limit.
+# CLI flag: -query-frontend.query-sharding-max-regexp-size-bytes
+[query_sharding_max_regexp_size_bytes: <int> | default = 4096]
+
+# (experimental) Split instant queries by an interval and execute in parallel. 0
+# to disable it.
+# CLI flag: -query-frontend.split-instant-queries-by-interval
+[split_instant_queries_by_interval: <duration> | default = 0s]
+
+# (advanced) Maximum lookback beyond which queries are not sent to ingester. 0
+# means all queries are sent to ingester.
+# CLI flag: -querier.query-ingesters-within
+[query_ingesters_within: <duration> | default = 13h]
+
+# Limit the total query time range (end - start time). This limit is enforced in
+# the query-frontend on the received query.
+# CLI flag: -query-frontend.max-total-query-length
+[max_total_query_length: <duration> | default = 0s]
+
+# Time to live duration for cached query results. If query falls into
+# out-of-order time window,
+# -query-frontend.results-cache-ttl-for-out-of-order-time-window is used
+# instead.
+# CLI flag: -query-frontend.results-cache-ttl
+[results_cache_ttl: <duration> | default = 1w]
+
+# Time to live duration for cached query results if query falls into
+# out-of-order time window. This is lower than -query-frontend.results-cache-ttl
+# so that incoming out-of-order samples are returned in the query results
+# sooner.
+# CLI flag: -query-frontend.results-cache-ttl-for-out-of-order-time-window
+[results_cache_ttl_for_out_of_order_time_window: <duration> | default = 10m]
+
+# Time to live duration for cached cardinality query results. The value 0
+# disables the cache.
+# CLI flag: -query-frontend.results-cache-ttl-for-cardinality-query
+[results_cache_ttl_for_cardinality_query: <duration> | default = 0s]
+
+# Time to live duration for cached label names and label values query results.
+# The value 0 disables the cache.
+# CLI flag: -query-frontend.results-cache-ttl-for-labels-query
+[results_cache_ttl_for_labels_query: <duration> | default = 0s]
+
+# (advanced) Cache requests that are not step-aligned.
+# CLI flag: -query-frontend.cache-unaligned-requests
+[cache_unaligned_requests: <boolean> | default = false]
+
+# Max size of the raw query, in bytes. 0 to not apply a limit to the size of the
+# query.
+# CLI flag: -query-frontend.max-query-expression-size-bytes
+[max_query_expression_size_bytes: <int> | default = 0]
+
+# (experimental) List of queries to block.
+[blocked_queries: <blocked_queries_config...> | default = ]
+
+# Mutate incoming queries to align their start and end with their step to
+# improve result caching.
+# CLI flag: -query-frontend.align-queries-with-step
+[align_queries_with_step: <boolean> | default = false]
+
+# Enables endpoints used for cardinality analysis.
+# CLI flag: -querier.cardinality-analysis-enabled
+[cardinality_analysis_enabled: <boolean> | default = false]
+
+# Maximum size in bytes of distinct label names and values. When querier
+# receives response from ingester, it merges the response with responses from
+# other ingesters. This maximum size limit is applied to the merged(distinct)
+# results. If the limit is reached, an error is returned.
+# CLI flag: -querier.label-names-and-values-results-max-size-bytes
+[label_names_and_values_results_max_size_bytes: <int> | default = 419430400]
+
+# Maximum number of label names allowed to be queried in a single
+# /api/v1/cardinality/label_values API call.
+# CLI flag: -querier.label-values-max-cardinality-label-names-per-request
+[label_values_max_cardinality_label_names_per_request: <int> | default = 100]
+
+# (experimental) Maximum size of an active series request result shard in bytes.
+# 0 to disable.
+# CLI flag: -querier.active-series-results-max-size-bytes
+[active_series_results_max_size_bytes: <int> | default = 419430400]
+
+# Duration to delay the evaluation of rules to ensure the underlying metrics
+# have been pushed.
+# CLI flag: -ruler.evaluation-delay-duration
+[ruler_evaluation_delay_duration: <duration> | default = 1m]
+
+# The tenant's shard size when sharding is used by ruler. Value of 0 disables
+# shuffle sharding for the tenant, and tenant rules will be sharded across all
+# ruler replicas.
+# CLI flag: -ruler.tenant-shard-size
+[ruler_tenant_shard_size: <int> | default = 0]
+
+# Maximum number of rules per rule group per-tenant. 0 to disable.
+# CLI flag: -ruler.max-rules-per-rule-group
+[ruler_max_rules_per_rule_group: <int> | default = 20]
+
+# Maximum number of rule groups per-tenant. 0 to disable.
+# CLI flag: -ruler.max-rule-groups-per-tenant
+[ruler_max_rule_groups_per_tenant: <int> | default = 70]
+
+# (experimental) Controls whether recording rules evaluation is enabled. This
+# configuration option can be used to forcefully disable recording rules
+# evaluation on a per-tenant basis.
+# CLI flag: -ruler.recording-rules-evaluation-enabled
+[ruler_recording_rules_evaluation_enabled: <boolean> | default = true]
+
+# (experimental) Controls whether alerting rules evaluation is enabled. This
+# configuration option can be used to forcefully disable alerting rules
+# evaluation on a per-tenant basis.
+# CLI flag: -ruler.alerting-rules-evaluation-enabled
+[ruler_alerting_rules_evaluation_enabled: <boolean> | default = true]
+
+# (advanced) True to enable a re-sync of the configured rule groups as soon as
+# they're changed via ruler's config API. This re-sync is in addition of the
+# periodic syncing. When enabled, it may take up to few tens of seconds before a
+# configuration change triggers the re-sync.
+# CLI flag: -ruler.sync-rules-on-changes-enabled
+[ruler_sync_rules_on_changes_enabled: <boolean> | default = true]
+
+# The tenant's shard size, used when store-gateway sharding is enabled. Value of
+# 0 disables shuffle sharding for the tenant, that is all tenant blocks are
+# sharded across all store-gateway replicas.
+# CLI flag: -store-gateway.tenant-shard-size
+[store_gateway_tenant_shard_size: <int> | default = 0]
+
+# Delete blocks containing samples older than the specified retention period.
+# Also used by query-frontend to avoid querying beyond the retention period. 0
+# to disable.
+# CLI flag: -compactor.blocks-retention-period
+[compactor_blocks_retention_period: <duration> | default = 0s]
+
+# The number of shards to use when splitting blocks. 0 to disable splitting.
+# CLI flag: -compactor.split-and-merge-shards
+[compactor_split_and_merge_shards: <int> | default = 0]
+
+# Number of groups that blocks for splitting should be grouped into. Each group
+# of blocks is then split separately. Number of output split shards is
+# controlled by -compactor.split-and-merge-shards.
+# CLI flag: -compactor.split-groups
+[compactor_split_groups: <int> | default = 1]
+
+# Max number of compactors that can compact blocks for single tenant. 0 to
+# disable the limit and use all compactors.
+# CLI flag: -compactor.compactor-tenant-shard-size
+[compactor_tenant_shard_size: <int> | default = 0]
+
+# If a partial block (unfinished block without meta.json file) hasn't been
+# modified for this time, it will be marked for deletion. The minimum accepted
+# value is 4h0m0s: a lower value will be ignored and the feature disabled. 0 to
+# disable.
+# CLI flag: -compactor.partial-block-deletion-delay
+[compactor_partial_block_deletion_delay: <duration> | default = 1d]
+
+# Enable block upload API for the tenant.
+# CLI flag: -compactor.block-upload-enabled
+[compactor_block_upload_enabled: <boolean> | default = false]
+
+# Enable block upload validation for the tenant.
+# CLI flag: -compactor.block-upload-validation-enabled
+[compactor_block_upload_validation_enabled: <boolean> | default = true]
+
+# Verify chunks when uploading blocks via the upload API for the tenant.
+# CLI flag: -compactor.block-upload-verify-chunks
+[compactor_block_upload_verify_chunks: <boolean> | default = true]
+
+# (advanced) Maximum size in bytes of a block that is allowed to be uploaded or
+# validated. 0 = no limit.
+# CLI flag: -compactor.block-upload-max-block-size-bytes
+[compactor_block_upload_max_block_size_bytes: <int> | default = 0]
+
+# S3 server-side encryption type. Required to enable server-side encryption
+# overrides for a specific tenant. If not set, the default S3 client settings
+# are used.
+[s3_sse_type: <string> | default = ""]
+
+# S3 server-side encryption KMS Key ID. Ignored if the SSE type override is not
+# set.
+[s3_sse_kms_key_id: <string> | default = ""]
+
+# S3 server-side encryption KMS encryption context. If unset and the key ID
+# override is set, the encryption context will not be provided to S3. Ignored if
+# the SSE type override is not set.
+[s3_sse_kms_encryption_context: <string> | default = ""]
+
+# Comma-separated list of network CIDRs to block in Alertmanager receiver
+# integrations.
+# CLI flag: -alertmanager.receivers-firewall-block-cidr-networks
+[alertmanager_receivers_firewall_block_cidr_networks: <string> | default = ""]
+
+# True to block private and local addresses in Alertmanager receiver
+# integrations. It blocks private addresses defined by  RFC 1918 (IPv4
+# addresses) and RFC 4193 (IPv6 addresses), as well as loopback, local unicast
+# and local multicast addresses.
+# CLI flag: -alertmanager.receivers-firewall-block-private-addresses
+[alertmanager_receivers_firewall_block_private_addresses: <boolean> | default = false]
+
+# Per-tenant rate limit for sending notifications from Alertmanager in
+# notifications/sec. 0 = rate limit disabled. Negative value = no notifications
+# are allowed.
+# CLI flag: -alertmanager.notification-rate-limit
+[alertmanager_notification_rate_limit: <float> | default = 0]
+
+# Per-integration notification rate limits. Value is a map, where each key is
+# integration name and value is a rate-limit (float). On command line, this map
+# is given in JSON format. Rate limit has the same meaning as
+# -alertmanager.notification-rate-limit, but only applies for specific
+# integration. Allowed integration names: webhook, email, pagerduty, opsgenie,
+# wechat, slack, victorops, pushover, sns, webex, telegram, discord, msteams.
+# CLI flag: -alertmanager.notification-rate-limit-per-integration
+[alertmanager_notification_rate_limit_per_integration: <map of string to float64> | default = {}]
+
+# Maximum size of configuration file for Alertmanager that tenant can upload via
+# Alertmanager API. 0 = no limit.
+# CLI flag: -alertmanager.max-config-size-bytes
+[alertmanager_max_config_size_bytes: <int> | default = 0]
+
+# Maximum number of templates in tenant's Alertmanager configuration uploaded
+# via Alertmanager API. 0 = no limit.
+# CLI flag: -alertmanager.max-templates-count
+[alertmanager_max_templates_count: <int> | default = 0]
+
+# Maximum size of single template in tenant's Alertmanager configuration
+# uploaded via Alertmanager API. 0 = no limit.
+# CLI flag: -alertmanager.max-template-size-bytes
+[alertmanager_max_template_size_bytes: <int> | default = 0]
+
+# Maximum number of aggregation groups in Alertmanager's dispatcher that a
+# tenant can have. Each active aggregation group uses single goroutine. When the
+# limit is reached, dispatcher will not dispatch alerts that belong to
+# additional aggregation groups, but existing groups will keep working properly.
+# 0 = no limit.
+# CLI flag: -alertmanager.max-dispatcher-aggregation-groups
+[alertmanager_max_dispatcher_aggregation_groups: <int> | default = 0]
+
+# Maximum number of alerts that a single tenant can have. Inserting more alerts
+# will fail with a log message and metric increment. 0 = no limit.
+# CLI flag: -alertmanager.max-alerts-count
+[alertmanager_max_alerts_count: <int> | default = 0]
+
+# Maximum total size of alerts that a single tenant can have, alert size is the
+# sum of the bytes of its labels, annotations and generatorURL. Inserting more
+# alerts will fail with a log message and metric increment. 0 = no limit.
+# CLI flag: -alertmanager.max-alerts-size-bytes
+[alertmanager_max_alerts_size_bytes: <int> | default = 0]
+
+# (advanced) Whether to enable automatic suffixes to names of metrics ingested
+# through OTLP.
+# CLI flag: -distributor.otel-metric-suffixes-enabled
+[otel_metric_suffixes_enabled: <boolean> | default = false]
